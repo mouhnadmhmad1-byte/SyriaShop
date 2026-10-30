@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>أحداث العروض - Syria Shop</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #0b0f19; color: #f8fafc; padding: 15px; padding-bottom: 60px; }
+        
+        header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 2px solid #ef4444; padding-bottom: 12px; margin-bottom: 15px; 
+        }
+        header h1 { color: #f87171; font-size: 16px; font-weight: bold; }
+        .back-btn { 
+            background-color: #1e293b; border: 1px solid #334155; color: #cbd5e1;
+            padding: 6px 14px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: bold; 
+        }
+
+        #statusBanner {
+            display: none; padding: 10px; border-radius: 8px; margin-bottom: 12px;
+            font-size: 12px; font-weight: bold; text-align: center;
+            background-color: #065f46; border: 1px solid #34d399; color: #ffffff;
+        }
+
+        .event-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 2px solid #3b82f6; border-radius: 14px; padding: 18px; margin-bottom: 15px;
+            text-align: center; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+        }
+        .event-card h2 { color: #38bdf8; font-size: 16px; margin-bottom: 8px; }
+        .event-card p { color: #cbd5e1; font-size: 12px; line-height: 1.6; margin-bottom: 12px; }
+
+        .timer-box {
+            background: #0b0f19; border: 1px solid #ef4444; padding: 10px; border-radius: 8px;
+            font-size: 12px; color: #fef08a; font-weight: bold; margin-bottom: 15px;
+        }
+
+        .form-group { margin-bottom: 12px; text-align: right; }
+        .form-group label { display: block; font-size: 12px; color: #cbd5e1; margin-bottom: 4px; }
+        .form-group input {
+            width: 100%; padding: 10px; background-color: #0b0f19; border: 1px solid #334155;
+            border-radius: 8px; color: white; font-size: 12px; outline: none; text-align: right;
+        }
+
+        .ref-input {
+            width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155;
+            border-radius: 8px; color: #38bdf8; font-size: 11px; text-align: center; margin-bottom: 10px; outline: none;
+        }
+
+        .btn-action {
+            background-color: #16a34a; color: white; border: none; padding: 11px;
+            border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 5px;
+        }
+        .btn-share {
+            background-color: #2563eb; color: white; border: none; padding: 12px;
+            border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>فعاليات Syria Shop</h1>
+        <a href="index.html" class="back-btn">الرئيسية ⬅</a>
+    </header>
+
+    <div id="statusBanner"></div>
+
+    <div class="event-card">
+        <h2>🔥 حدث دعوة الأصدقاء (اربح 1 ل.س عن كل شخص!)</h2>
+        <p>قم بدعوة أصدقائك عبر رابطك الخاص. عندما يسجل صديقك، اكتب بريده أدناه واضغط إرسال طلب للأدمن لتحصل أنت وهو على 1 ليرة سورية فور الموافقة!</p>
+        
+        <div class="timer-box" id="countdownTimer">⏳ ينتهي الحدث خلال: جاري الحساب...</div>
+
+        <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 5px;">رابط الدعوة الخاص بك:</label>
+        <input type="text" id="myRefLink" class="ref-input" readonly value="جاري إنشاء الرابط...">
+
+        <button type="button" class="btn-share" onclick="shareLink()">📤 مشاركة رابط الدعوة عبر واتساب</button>
+
+        <div style="border-top: 1px solid #334155; margin-top: 15px; padding-top: 15px;">
+            <div style="font-size: 13px; color: #38bdf8; font-weight: bold; margin-bottom: 10px;">📝 إرسال طلب مكافأة دعوة لصديق:</div>
+            <div class="form-group">
+                <label>بريدك الإلكتروني (الداعي):</label>
+                <input type="text" id="inviterEmail" placeholder="بريدك المسجل بالتطبيق">
+            </div>
+            <div class="form-group">
+                <label>بريد صديقك الذي انضم (المدعو):</label>
+                <input type="text" id="invitedEmail" placeholder="بريد الصديق الجديد">
+            </div>
+            <button type="button" class="btn-action" onclick="sendInviteRequest()">📤 إرسال طلب المكافأة</button>
+        </div>
+    </div>
+
+    <script>
+        var FIREBASE_URL = "https://syria-shop-01-default-rtdb.firebaseio.com";
+        
+        var savedUser = localStorage.getItem("syria_shop_user") || "";
+        if (savedUser) {
+            document.getElementById("inviterEmail").value = savedUser;
+        }
+
+        var domain = window.location.href.split('?')[0].replace('events.html', 'index.html');
+        var refLink = domain;
+        document.getElementById("myRefLink").value = refLink;
+
+        function shareLink() {
+            var text = "انضم إلى متجر Syria Shop لشحن الألعاب والبطاقات عبر رابطي واربح معنا: " + refLink;
+            if (navigator.share) {
+                navigator.share({ title: 'Syria Shop', text: text, url: refLink }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(refLink);
+                alert("📋 تم نسخ رابط الدعوة! شاركه مع أصدقائك.");
+            }
+        }
+
+        function showMsg(txt, err) {
+            var b = document.getElementById("statusBanner");
+            b.style.display = "block";
+            b.style.backgroundColor = err ? "#7f1d1d" : "#065f46";
+            b.innerText = txt;
+            setTimeout(function() { b.style.display = "none"; }, 3000);
+        }
+
+        function sendInviteRequest() {
+            var inviter = document.getElementById("inviterEmail").value.trim();
+            var invited = document.getElementById("invitedEmail").value.trim();
+
+            if (!inviter || !invited) {
+                showMsg("⚠️ يرجى إدخال بريدك وبريد صديقك!", true);
+                return;
+            }
+
+            var reqData = {
+                inviterEmail: inviter,
+                invitedEmail: invited,
+                status: "قيد الانتظار",
+                amount: 1,
+                date: new Date().toLocaleString()
+            };
+
+            showMsg("⏳ جاري إرسال الطلب للإدارة...", false);
+
+            fetch(FIREBASE_URL + "/invite_requests.json", {
+                method: "POST",
+                body: JSON.stringify(reqData)
+            }).then(function() {
+                showMsg("✅ تم إرسال الطلب بنجاح! سيتم مراجعته وإضافة الرصيد لك ولصديقك قريبأ.", false);
+                document.getElementById("invitedEmail").value = "";
+            }).catch(function() {
+                showMsg("❌ تعذر إرسال الطلب، تأكد من الإنترنت", true);
+            });
+        }
+
+        // عداد تنازلي لمدة 20 يوم
+        function updateCountdown() {
+            var eventEndDate = new Date().getTime() + (20 * 24 * 60 * 60 * 1000);
+            setInterval(function() {
+                var now = new Date().getTime();
+                var distance = eventEndDate - now;
+                var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                document.getElementById("countdownTimer").innerHTML = 
+                    "⏳ ينتهي الحدث خلال: " + days + " يوم و " + hours + " ساعة و " + minutes + " دقيقة";
+            }, 1000);
+        }
+        updateCountdown();
+    </script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>شحن فري فاير - Syria Shop</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #080d1a; color: #f8fafc; padding-bottom: 85px; }
+        
+        /* الشريط العلوي مع زر الرجوع والرصيد الثابت */
+        .balance-top-header { 
+            background: linear-gradient(180deg, #1e3a8a 0%, #0f172a 100%);
+            padding: 14px 15px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .balance-text { font-size: 18px; font-weight: bold; color: #ffffff; direction: ltr; }
+        .back-btn { 
+            background-color: rgba(255, 255, 255, 0.1); border: 1px solid #334155; color: #cbd5e1;
+            padding: 6px 14px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: bold; 
+        }
+
+        .container { padding: 15px; }
+
+        .form-card {
+            background-color: #111827; border: 1px solid #1f2937; border-radius: 16px;
+            padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .form-card h3 { font-size: 14px; color: #38bdf8; margin-bottom: 12px; }
+
+        .input-box {
+            width: 100%; padding: 12px; background-color: #0b1120; border: 1px solid #334155;
+            border-radius: 10px; color: white; font-size: 14px; outline: none; margin-bottom: 15px; text-align: right;
+        }
+        .input-box:focus { border-color: #38bdf8; }
+
+        .packages-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 15px; }
+        .package-item {
+            background-color: #1e293b; border: 1.5px solid #334155; border-radius: 12px;
+            padding: 14px; display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .package-item.active { border-color: #38bdf8; background-color: #172554; }
+        .pkg-name { font-size: 14px; font-weight: bold; color: white; display: flex; align-items: center; gap: 8px; }
+        .pkg-price { font-size: 13px; color: #38bdf8; font-weight: bold; font-family: monospace; }
+
+        .btn-order {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none;
+            width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .btn-order:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* الشريط السفلي الثابت */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 62px;
+            background: #070d1e; border-top: 1.5px solid #1e293b;
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 9999; box-shadow: 0 -4px 15px rgba(0,0,0,0.6);
+        }
+        .nav-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 2px; color: #64748b; font-size: 11px; font-weight: bold; cursor: pointer; flex: 1; height: 100%;
+            text-decoration: none; border: none; background: none;
+        }
+        .nav-btn.active { color: #38bdf8; }
+        .nav-btn .nav-icon { font-size: 19px; }
+    </style>
+</head>
+<body>
+
+    <!-- الشريط العلوي مع الرصيد الثابت -->
+    <header class="balance-top-header">
+        <a href="index.html" class="back-btn">⬅ الرئيسية</a>
+        <div class="balance-text" id="topWalletBalance">الرصيد: 0.00 ل.س</div>
+    </header>
+
+    <div class="container">
+        <div class="form-card">
+            <h3>1. أدخل الآيدي (Player ID):</h3>
+            <input type="number" id="playerId" class="input-box" placeholder="مثال: 1234567890">
+
+            <h3>2. اختر باقة الجواهر:</h3>
+            <div class="packages-grid">
+                <div class="package-item active" onclick="selectPkg(this, '100 جوهرة 💎', 'ff_100')">
+                    <div class="pkg-name">💎 100 جوهرة</div>
+                    <div class="pkg-price" id="label_ff_100">1,000.00 ل.س</div>
+                </div>
+                <div class="package-item" onclick="selectPkg(this, '310 جوهرة 💎', 'ff_310')">
+                    <div class="pkg-name">💎 310 جوهرة</div>
+                    <div class="pkg-price" id="label_ff_310">3,000.00 ل.س</div>
+                </div>
+                <div class="package-item" onclick="selectPkg(this, '520 جوهرة 💎', 'ff_520')">
+                    <div class="pkg-name">💎 520 جوهرة</div>
+                    <div class="pkg-price" id="label_ff_520">5,000.00 ل.س</div>
+                </div>
+            </div>
+
+            <button class="btn-order" id="orderBtn" onclick="sendOrder()">تأكيد الشحن الفوري</button>
+        </div>
+    </div>
+
+    <!-- الشريط السفلي الثابت -->
+    <footer class="bottom-nav">
+        <a href="index.html" class="nav-btn active">
+            <div class="nav-icon">🏠</div>
+            <div>الرئيسية</div>
+        </a>
+        <a href="index.html" class="nav-btn">
+            <div class="nav-icon">👛</div>
+            <div>المحفظة</div>
+        </a>
+        <a href="index.html" class="nav-btn">
+            <div class="nav-icon">📋</div>
+            <div>الطلبات</div>
+        </a>
+        <a href="events.html" class="nav-btn">
+            <div class="nav-icon">🎁</div>
+            <div>الفعاليات</div>
+        </a>
+    </footer>
+
+    <script>
+        const FIREBASE_URL = "https://syria-shop-01-default-rtdb.firebaseio.com";
+        const ADMIN_EMAIL = "mouhnad mhmad@gmail.comm";
+
+        let currentUser = localStorage.getItem('syriaShopCurrentUser');
+        if (!currentUser) window.location.href = 'login.html';
+
+        let currentBalance = 0;
+        let selectedPkgName = '100 جوهرة 💎';
+        let selectedPkgKey = 'ff_100';
+        let currentPrices = { ff_100: 1000, ff_310: 3000, ff_520: 5000 };
+
+        function toSafeKey(email) {
+            return String(email || "guest").toLowerCase().replace(/[^a-z0-9]/g, '_');
+        }
+
+        function formatBalance(amount) {
+            var num = parseFloat(amount) || 0;
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        async function initPage() {
+            try {
+                let pRes = await fetch(`${FIREBASE_URL}/prices.json`);
+                let pData = await pRes.json();
+                if (pData) {
+                    if (pData.ff_100) currentPrices.ff_100 = Number(pData.ff_100);
+                    if (pData.ff_310) currentPrices.ff_310 = Number(pData.ff_310);
+                    if (pData.ff_520) currentPrices.ff_520 = Number(pData.ff_520);
+                }
+            } catch (e) {}
+
+            document.getElementById('label_ff_100').innerText = formatBalance(currentPrices.ff_100) + ' ل.س';
+            document.getElementById('label_ff_310').innerText = formatBalance(currentPrices.ff_310) + ' ل.س';
+            document.getElementById('label_ff_520').innerText = formatBalance(currentPrices.ff_520) + ' ل.س';
+
+            if (currentUser === ADMIN_EMAIL) {
+                currentBalance = 9999999;
+                document.getElementById('topWalletBalance').innerText = 'الرصيد: ∞';
+                return;
+            }
+
+            try {
+                let userKey = toSafeKey(currentUser);
+                let uRes = await fetch(`${FIREBASE_URL}/users/${userKey}.json`);
+                let uData = await uRes.json();
+                if (uData) {
+                    currentBalance = Number(uData.balance || 0);
+                    document.getElementById('topWalletBalance').innerText = `الرصيد: ${formatBalance(currentBalance)} ل.س`;
+                }
+            } catch (e) {}
+        }
+
+        function selectPkg(el, name, key) {
+            document.querySelectorAll('.package-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            selectedPkgName = name;
+            selectedPkgKey = key;
+        }
+
+        async function sendOrder() {
+            let pId = document.getElementById('playerId').value.trim();
+            if (!pId) {
+                alert("يرجى إدخال آيدي حساب فري فاير أولاً!");
+                return;
+            }
+
+            let price = currentPrices[selectedPkgKey];
+
+            if (currentBalance < price && currentUser !== ADMIN_EMAIL) {
+                alert(`عذراً، رصيدك (${formatBalance(currentBalance)} ل.س) غير كافٍ لشراء هذه الباقة (${formatBalance(price)} ل.س)!`);
+                return;
+            }
+
+            if (!confirm(`هل أنت متأكد من شحن ${selectedPkgName} للآيدي ${pId} بسعر ${formatBalance(price)} ل.س؟`)) {
+                return;
+            }
+
+            let btn = document.getElementById('orderBtn');
+            btn.disabled = true;
+            btn.innerText = "جارٍ إرسال الطلب...";
+
+            try {
+                let userKey = toSafeKey(currentUser);
+                if (currentUser !== ADMIN_EMAIL) {
+                    let newBal = currentBalance - price;
+                    await fetch(`${FIREBASE_URL}/users/${userKey}/balance.json`, { method: 'PUT', body: JSON.stringify(newBal) });
+                    currentBalance = newBal;
+                    document.getElementById('topWalletBalance').innerText = `الرصيد: ${formatBalance(currentBalance)} ل.س`;
+                }
+
+                let newOrder = {
+                    game: 'Free Fire',
+                    playerId: pId,
+                    package: selectedPkgName,
+                    price: price,
+                    status: 'قيد الانتظار',
+                    reason: '',
+                    userEmail: currentUser,
+                    time: new Date().toLocaleDateString('en-US')
+                };
+
+                await fetch(`${FIREBASE_URL}/orders.json`, { method: 'POST', body: JSON.stringify(newOrder) });
+
+                alert("✅ تم إرسال طلب الشحن بنجاح! يتم الآن تدقيقه من قبل الأدمن.");
+                window.location.href = 'index.html';
+
+            } catch (e) {
+                alert("تعذر إرسال الطلب، تأكد من الاتصال بالإنترنت.");
+                btn.disabled = false;
+                btn.innerText = "تأكيد الشحن الفوري";
+            }
+        }
+
+        initPage();
+    </script>
+</body>
+</html>

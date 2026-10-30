@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Syria Shop</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #080d1a; color: #f8fafc; padding-bottom: 85px; margin: 0; }
+
+        /* الشريط العلوي */
+        .balance-top-header {
+            background: linear-gradient(180deg, #1e3a8a 0%, #0f172a 100%);
+            padding: 14px 16px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .balance-text { font-size: 18px; font-weight: bold; color: #ffffff; direction: ltr; display: inline-block; }
+        .menu-btn {
+            background: rgba(255, 255, 255, 0.12); border: 1px solid #334155; color: #38bdf8;
+            font-size: 22px; width: 42px; height: 42px; border-radius: 10px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; outline: none;
+        }
+
+        .container { padding: 15px; }
+
+        /* القائمة الجانبية */
+        .side-menu-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); z-index: 1000; display: none;
+        }
+        .side-menu {
+            position: fixed; top: 0; right: 0; width: 275px; height: 100%;
+            background-color: #0b1120; border-left: 1.5px solid #2563eb;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.9); z-index: 1001;
+            display: none; flex-direction: column; padding: 20px 15px; overflow-y: auto;
+        }
+
+        .user-profile-box {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #334155; border-radius: 14px; padding: 12px;
+            margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .profile-name { font-size: 14px; font-weight: bold; color: #38bdf8; margin-bottom: 2px; }
+        .profile-email { font-size: 11px; color: #94a3b8; word-break: break-all; }
+        .profile-tag { font-size: 10px; color: #34d399; margin-top: 3px; }
+
+        .menu-items-list { list-style: none; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .menu-link {
+            display: flex; align-items: center; gap: 12px; padding: 11px 12px;
+            color: #cbd5e1; font-size: 13px; font-weight: bold; border-radius: 10px; text-decoration: none;
+        }
+        .menu-link:active { background: #1e293b; color: #38bdf8; }
+        .menu-link .icon { font-size: 16px; width: 22px; text-align: center; }
+
+        .menu-logout-btn {
+            display: flex; align-items: center; gap: 10px; padding: 11px 12px;
+            color: #ef4444; font-size: 13px; font-weight: bold; cursor: pointer;
+            border-top: 1px solid #1e293b; margin-top: 15px; border-radius: 8px; text-decoration: none;
+        }
+
+        /* زر الفعاليات */
+        .quick-action-btn {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 25px; padding: 12px; display: flex; justify-content: center; align-items: center;
+            gap: 10px; color: white; text-decoration: none; font-weight: bold; font-size: 14px;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35); margin-bottom: 20px; border: 1px solid #38bdf8;
+        }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; margin-top: 10px; }
+        .section-right { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: bold; color: #f8fafc; }
+        .section-tag { width: 4px; height: 14px; background-color: #38bdf8; border-radius: 2px; }
+
+        /* شبكة الألعاب */
+        .cards-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .item-card {
+            background-color: #111827; border: 1px solid #1f2937; border-radius: 16px;
+            overflow: hidden; text-decoration: none; display: flex; flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .item-card:active { transform: scale(0.97); border-color: #38bdf8; }
+        .card-img-area { height: 90px; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, #1e293b, #0f172a); }
+        .card-wave { height: 10px; background: #111827; border-top-left-radius: 12px; border-top-right-radius: 12px; margin-top: -8px; }
+        .card-info { padding: 4px 10px 10px 10px; text-align: center; }
+        .card-title { font-size: 13px; font-weight: bold; color: #f8fafc; margin-bottom: 2px; }
+        .card-subtitle { font-size: 10px; color: #38bdf8; }
+
+        /* الشريط السفلي الثابت المباشر */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 62px;
+            background: #070d1e; border-top: 1.5px solid #1e293b;
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 900; box-shadow: 0 -4px 15px rgba(0,0,0,0.6);
+        }
+        .nav-link-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 2px; color: #64748b; font-size: 11px; font-weight: bold; cursor: pointer; flex: 1; height: 100%;
+            text-decoration: none;
+        }
+        .nav-link-item.active { color: #38bdf8; }
+        .nav-link-item .nav-icon { font-size: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- القائمة الجانبية (☰) -->
+    <div class="side-menu-overlay" id="menuOverlay" onclick="toggleSidebar()"></div>
+    <div class="side-menu" id="sideMenu">
+        <div class="user-profile-box">
+            <div>
+                <div class="profile-name" id="menuUserName">مستخدم مسجل</div>
+                <div class="profile-email" id="menuUserEmail">---</div>
+                <div class="profile-tag">الحساب الحالي 🟢</div>
+            </div>
+            <div style="font-size:22px;">👤</div>
+        </div>
+
+        <ul class="menu-items-list">
+            <a href="index.html" class="menu-link">
+                <span class="icon">🏠</span><span>الرئيسية</span>
+            </a>
+            <a href="wallet.html" class="menu-link">
+                <span class="icon">📦</span><span>المحفظة</span>
+            </a>
+            <a href="orders.html" class="menu-link">
+                <span class="icon">🛒</span><span>الطلبات</span>
+            </a>
+            <a href="https://wa.me/963945640713?text=طلب+أن+أصبح+وكيلاً" class="menu-link">
+                <span class="icon">📱</span><span>الوكلاء</span>
+            </a>
+            <a href="https://wa.me/963945640713?text=تقديم+شكوى+أو+مقترح" class="menu-link">
+                <span class="icon">💬</span><span>الشكاوى</span>
+            </a>
+            <a href="https://wa.me/963945640713?text=مرحبا+أحتاج+مساعدة" class="menu-link">
+                <span class="icon">🎧</span><span>الدعم الفني المباشر</span>
+            </a>
+        </ul>
+
+        <a href="login.html" onclick="logout()" class="menu-logout-btn">
+            <span>🚪</span><span>تسجيل الخروج</span>
+        </a>
+    </div>
+
+    <!-- الشريط العلوي -->
+    <header class="balance-top-header">
+        <button type="button" class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <div class="balance-text" id="topWalletBalance">الرصيد: 0.00 ل.س</div>
+    </header>
+
+    <div class="container">
+
+        <div id="adminArea" style="display: none; margin-bottom: 12px;">
+            <a href="admin.html" style="background:#7f1d1d; border:1px solid #ef4444; color:white; display:block; text-align:center; padding:10px; border-radius:12px; text-decoration:none; font-size:12px; font-weight:bold;">
+                ⚙️ الدخول إلى لوحة تحكم الإدارة
+            </a>
+        </div>
+
+        <a href="events.html" class="quick-action-btn">
+            <span>🎁</span><span>قسم الأحداث والعروض الخاصة</span><span>⬅</span>
+        </a>
+
+        <div class="section-header">
+            <div class="section-right"><div class="section-tag"></div><span>قسم الألعاب لشحن الحسابات</span></div>
+        </div>
+
+        <div class="cards-row">
+            <a href="freefire.html" class="item-card">
+                <div class="card-img-area"><span style="font-size:36px;">🔥</span></div>
+                <div class="card-wave"></div>
+                <div class="card-info">
+                    <div class="card-title">فري فاير</div>
+                    <div class="card-subtitle">شحن ID مباشر</div>
+                </div>
+            </a>
+            <a href="pubg.html" class="item-card">
+                <div class="card-img-area"><span style="font-size:36px;">🎮</span></div>
+                <div class="card-wave"></div>
+                <div class="card-info">
+                    <div class="card-title">ببجي موبايل</div>
+                    <div class="card-subtitle">شحن شدات UC</div>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- الشريط السفلي بروابط مباشرة مستحيل أن تتعطل -->
+    <footer class="bottom-nav">
+        <a href="index.html" class="nav-link-item active">
+            <div class="nav-icon">🏠</div>
+            <div>الرئيسية</div>
+        </a>
+        <a href="wallet.html" class="nav-link-item">
+            <div class="nav-icon">👛</div>
+            <div>المحفظة</div>
+        </a>
+        <a href="orders.html" class="nav-link-item">
+            <div class="nav-icon">📋</div>
+            <div>الطلبات</div>
+        </a>
+        <a href="events.html" class="nav-link-item">
+            <div class="nav-icon">🎁</div>
+            <div>الفعاليات</div>
+        </a>
+    </footer>
+
+    <script>
+        var ADMIN_EMAIL = "mouhnad mhmad@gmail.comm";
+        var FIREBASE_URL = "https://syria-shop-01-default-rtdb.firebaseio.com";
+        var currentUser = "";
+
+        try {
+            currentUser = localStorage.getItem('syriaShopCurrentUser') || "";
+        } catch(e) {}
+
+        function toSafeKey(email) {
+            return String(email || "guest").toLowerCase().replace(/[^a-z0-9]/g, '_');
+        }
+
+        function formatBalance(amount) {
+            var num = parseFloat(amount) || 0;
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function toggleSidebar() {
+            var menu = document.getElementById('sideMenu');
+            var overlay = document.getElementById('menuOverlay');
+            if (menu.style.display === 'flex') {
+                menu.style.display = 'none';
+                overlay.style.display = 'none';
+            } else {
+                menu.style.display = 'flex';
+                overlay.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            try { localStorage.removeItem('syriaShopCurrentUser'); } catch(e) {}
+        }
+
+        // تحديث الرصيد والأدمن
+        (function() {
+            if (!currentUser) return;
+            var emailElem = document.getElementById('menuUserEmail');
+            if (emailElem) emailElem.innerText = currentUser;
+
+            if (currentUser === ADMIN_EMAIL) {
+                var adm = document.getElementById('adminArea');
+                if (adm) adm.style.display = 'block';
+                document.getElementById('topWalletBalance').innerText = 'الرصيد: ∞';
+                document.getElementById('menuUserName').innerText = 'مدير النظام (الأدمن)';
+                return;
+            }
+
+            fetch(FIREBASE_URL + "/users/" + toSafeKey(currentUser) + ".json")
+                .then(function(r) { return r.json(); })
+                .then(function(user) {
+                    if (user && user.balance !== undefined) {
+                        document.getElementById('topWalletBalance').innerText = "الرصيد: " + formatBalance(user.balance) + " ل.س";
+                        document.getElementById('menuUserName').innerText = user.name || 'مستخدم مسجل';
+                    }
+                }).catch(function(){});
+        })();
+    </script>
+</body>
+</html>

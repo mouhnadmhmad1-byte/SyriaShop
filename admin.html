@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>لوحة الإدارة</title>
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif}
+        body{background:#0b0f19;color:#f8fafc;padding:12px;padding-bottom:60px}
+        header{display:flex;justify-content:space-between;border-bottom:2px solid #ef4444;padding-bottom:12px;margin-bottom:12px}
+        .btn{padding:9px;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;color:#fff;border:none}
+        .nav-btn{background:#2563eb;border:1px solid #38bdf8;padding:10px 4px;font-size:11px;font-weight:bold;color:#fff;border-radius:8px;transition:0.2s}
+        .card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px;margin-bottom:15px}
+        .row-c{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px;margin-bottom:10px;font-size:12px}
+        .row-c span{color:#38bdf8;font-weight:bold}
+        .inp{width:100%;padding:10px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#fff;margin-bottom:10px;text-align:right}
+        #msg{display:none;padding:10px;border-radius:8px;margin-bottom:12px;font-weight:bold;text-align:center;color:#fff}
+        .flex-r{display:flex;gap:8px;margin-top:8px} .flex-r .btn{flex:1}
+    </style>
+</head>
+<body>
+    <header><h2>الإدارة</h2><a href="index.html" class="btn" style="background:#1e293b;border:1px solid #334155;text-decoration:none">الرئيسية ⬅</a></header>
+    <div id="msg"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:15px">
+        <button id="bOrd" class="nav-btn" onclick="shw('Ord')">📦 الشحن</button>
+        <button id="bDep" class="nav-btn" onclick="shw('Dep')">📥 المحفظة</button>
+        <button id="bInv" class="nav-btn" onclick="shw('Inv')">🎁 الدعوات</button>
+    </div>
+
+    <div class="card" id="sOrd" style="display:none">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span>الطلبات (قيد الانتظار)</span><button class="btn" style="background:#2563eb" onclick="lOrd()">تحديث</button></div>
+        <div id="lOrd" style="color:#94a3b8;font-size:12px;text-align:center">اضغط تحديث</div>
+        <button class="btn" style="background:#475569;width:100%;margin-top:10px" onclick="shw('Usr')">⬅ حسابات</button>
+    </div>
+
+    <div class="card" id="sDep" style="display:none">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span>المحفظة (قيد الانتظار)</span><button class="btn" style="background:#2563eb" onclick="lDep()">تحديث</button></div>
+        <div id="lDep" style="color:#94a3b8;font-size:12px;text-align:center">اضغط تحديث</div>
+        <button class="btn" style="background:#475569;width:100%;margin-top:10px" onclick="shw('Usr')">⬅ حسابات</button>
+    </div>
+
+    <div class="card" id="sInv" style="display:none">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span>الدعوات (قيد الانتظار)</span><button class="btn" style="background:#2563eb" onclick="lInv()">تحديث</button></div>
+        <div id="lInv" style="color:#94a3b8;font-size:12px;text-align:center">اضغط تحديث</div>
+        <button class="btn" style="background:#475569;width:100%;margin-top:10px" onclick="shw('Usr')">⬅ حسابات</button>
+    </div>
+
+    <div class="card" id="sUsr">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="color:#38bdf8;font-weight:bold">قائمة الحسابات</span><button class="btn" style="background:#2563eb" onclick="lUsr()">جلب</button></div>
+        <input type="text" id="srch" class="inp" placeholder="🔍 بحث..." oninput="fUsr()">
+        <div id="lUsr" style="color:#94a3b8;font-size:12px;text-align:center">اضغط جلب</div>
+        
+        <div id="eBox" style="display:none;background:#0f172a;padding:15px;border-radius:10px;margin-top:10px;border:1px solid #2563eb">
+            <h4 style="color:#38bdf8;margin-bottom:10px">⚙️ تعديل الحساب</h4>
+            <input id="uEm" class="inp" placeholder="البريد"><input id="uPw" class="inp" placeholder="كلمة المرور">
+            <input id="uPh" class="inp" placeholder="رقم الهاتف"><input id="uBa" type="number" class="inp" placeholder="الرصيد">
+            <button class="btn" style="background:#16a34a;width:100%" onclick="sUsr()">حفظ</button>
+            <button id="bBan" class="btn" style="background:#b91c1c;width:100%;margin-top:8px" onclick="tBan()">حظر</button>
+            <button class="btn" style="background:#475569;width:100%;margin-top:8px" onclick="xBox()">رجوع</button>
+        </div>
+    </div>
+
+    <script>
+    var DB = "https://syria-shop-01-default-rtdb.firebaseio.com";
+    var cU = [], cO = [], cD = [], cI = [], aK = null, iB = false;
+    
+    function $(i) { return document.getElementById(i); }
+    
+    function msg(t, e) {
+        var b = $("msg"); if (!b) return;
+        b.style.display = "block"; b.style.background = e ? "#7f1d1d" : "#065f46"; b.innerText = t;
+        setTimeout(function() { b.style.display = "none"; }, 3000);
+    }
+    
+    function api(p, m, d, cb) {
+        var o = { method: m || "GET" };
+        if (m && d) o.body = JSON.stringify(d);
+        fetch(DB + p + ".json", o).then(function(r) { return r.json(); }).then(cb).catch(function(e) { msg("خطأ اتصال", 1); });
+    }
+    
+    function shw(n) {
+        var arr = ["Ord", "Dep", "Inv", "Usr"];
+        for (var i = 0; i < arr.length; i++) {
+            $("s" + arr[i]).style.display = "none";
+            if ($("b" + arr[i])) $("b" + arr[i]).style.background = "#2563eb";
+        }
+        $("s" + n).style.display = "block";
+        if ($("b" + n)) $("b" + n).style.background = "#16a34a";
+        if (n == 'Ord') lOrd(); if (n == 'Dep') lDep(); if (n == 'Inv') lInv();
+    }
+    
+    function lUsr() {
+        $("lUsr").innerHTML = "⏳..."; xBox();
+        api("/users", null, null, function(d) {
+            cU = []; if (d) for (var k in d) { d[k]._k = k; cU.push(d[k]); }
+            rUsr(cU);
+        });
+    }
+    
+    function rUsr(a) {
+        if (!a.length) { $("lUsr").innerHTML = "فارغ"; return; }
+        var h = "";
+        for (var i = 0; i < a.length; i++) {
+            var u = a[i];
+            var bTag = u.banned ? '<b style="color:red">(محظور)</b>' : '';
+            h += '<div class="row-c" onclick="sel(\'' + u._k + '\')"><div style="margin-bottom:4px">الاسم: <span>' + (u.name || "مستخدم") + '</span> ' + bTag + '</div><div style="margin-bottom:4px">البريد: <span>' + (u.email || u._k) + '</span></div><div>الرصيد: <span>' + (u.balance || 0) + '</span></div></div>';
+        }
+        $("lUsr").innerHTML = h;
+    }
+    
+    function sel(k) {
+        aK = k; var u = null;
+        for (var i = 0; i < cU.length; i++) { if (cU[i]._k == k) { u = cU[i]; break; } }
+        if (!u) return;
+        $("srch").style.display = "none"; $("lUsr").innerHTML = ""; $("eBox").style.display = "block";
+        $("uEm").value = u.email || ""; $("uPw").value = u.password || ""; $("uPh").value = u.phone || ""; $("uBa").value = u.balance || 0;
+        iB = !!u.banned; $("bBan").innerText = iB ? "🔓 إلغاء حظر" : "🚫 حظر"; $("bBan").style.background = iB ? "#15803d" : "#b91c1c";
+    }
+    
+    function xBox() { $("eBox").style.display = "none"; $("srch").style.display = "block"; rUsr(cU); }
+    
+    function fUsr() {
+        var q = $("srch").value.toLowerCase();
+        if (!q) { rUsr(cU); return; }
+        var f = [];
+        for (var i = 0; i < cU.length; i++) {
+            if ((cU[i].email || cU[i]._k).toLowerCase().indexOf(q) !== -1) f.push(cU[i]);
+        }
+        rUsr(f);
+    }
+    
+    function sUsr() {
+        msg("⏳...", 0);
+        api("/users/" + aK, null, null, function(o) {
+            o = o || {}; o.email = $("uEm").value; o.password = $("uPw").value; o.phone = $("uPh").value; o.balance = Number($("uBa").value) || 0;
+            api("/users/" + aK, "PUT", o, function() { msg("✅ تم الحفظ", 0); lUsr(); });
+        });
+    }
+    
+    function tBan() {
+        if (!confirm("تأكيد؟")) return; msg("⏳...", 0);
+        api("/users/" + aK, null, null, function(o) {
+            o = o || {}; o.banned = !iB;
+            api("/users/" + aK, "PUT", o, function() { msg("✅ تم الحظر", 0); lUsr(); });
+        });
+    }
+    
+    function lOrd() {
+        $("lOrd").innerHTML = "⏳..."; api("/orders", null, null, function(d) {
+            cO = []; if (d) for (var k in d) { d[k]._k = k; cO.push(d[k]); } rOrd();
+        });
+    }
+    
+    function rOrd() {
+        var c = 0, h = "";
+        var rev = cO.slice().reverse();
+        for (var i = 0; i < rev.length; i++) {
+            var o = rev[i];
+            if (o.status == "قيد الانتظار") {
+                c++;
+                var origIdx = cO.indexOf(o);
+                h += '<div class="row-c"><div style="margin-bottom:4px">زبون: <span>' + o.userEmail + '</span></div><div style="margin-bottom:4px">آيدي: <span>' + o.playerId + '</span></div><div>سعر: <span>' + o.price + '</span></div><div class="flex-r"><button class="btn" style="background:#15803d" onclick="aOrd(' + origIdx + ',\'مكتمل\')">موافقة</button><button class="btn" style="background:#b91c1c" onclick="aOrd(' + origIdx + ',\'مرفوض\')">رفض</button></div></div>';
+            }
+        }
+        $("lOrd").innerHTML = c ? h : "🎉 لا يوجد طلبات";
+    }
+    
+    function aOrd(i, s) { cO[i].status = s; msg("⏳...", 0); api("/orders/" + cO[i]._k, "PUT", cO[i], function() { msg("✅", 0); lOrd(); }); }
+    
+    function lDep() {
+        $("lDep").innerHTML = "⏳..."; api("/deposit_requests", null, null, function(d) {
+            cD = []; if (d) for (var k in d) { d[k]._k = k; cD.push(d[k]); } rDep();
+        });
+    }
+    
+    function rDep() {
+        var c = 0, h = "";
+        var rev = cD.slice().reverse();
+        for (var i = 0; i < rev.length; i++) {
+            var d = rev[i];
+            if (d.status == "قيد الانتظار") {
+                c++;
+                var origIdx = cD.indexOf(d);
+                h += '<div class="row-c"><div style="margin-bottom:4px">زبون: <span>' + d.userEmail + '</span></div><div style="margin-bottom:4px">عملية: <span>' + (d.transId || "") + '</span></div><div>مبلغ: <span>' + d.amount + '</span></div><div class="flex-r"><button class="btn" style="background:#15803d" onclick="aDep(' + origIdx + ',\'موافق عليه\')">قبول</button><button class="btn" style="background:#b91c1c" onclick="aDep(' + origIdx + ',\'مرفوض\')">رفض</button></div></div>';
+            }
+        }
+        $("lDep").innerHTML = c ? h : "🎉 لا طلبات";
+    }
+    
+    function aDep(i, s) { cD[i].status = s; msg("⏳...", 0); api("/deposit_requests/" + cD[i]._k, "PUT", cD[i], function() { msg("✅", 0); lDep(); }); }
+    
+    function lInv() {
+        $("lInv").innerHTML = "⏳..."; api("/invite_requests", null, null, function(d) {
+            cI = []; if (d) for (var k in d) { d[k]._k = k; cI.push(d[k]); } rInv();
+        });
+    }
+    
+    function rInv() {
+        var c = 0, h = "";
+        var rev = cI.slice().reverse();
+        for (var i = 0; i < rev.length; i++) {
+            var v = rev[i];
+            if (v.status == "قيد الانتظار") {
+                c++;
+                var origIdx = cI.indexOf(v);
+                h += '<div class="row-c"><div style="margin-bottom:4px">الداعي: <span>' + v.inviterEmail + '</span></div><div>المدعو: <span>' + v.invitedEmail + '</span></div><div class="flex-r"><button class="btn" style="background:#15803d" onclick="aInv(' + origIdx + ')">مكافأة 1 ل.س</button><button class="btn" style="background:#b91c1c" onclick="xInv(' + origIdx + ')">رفض</button></div></div>';
+            }
+        }
+        $("lInv").innerHTML = c ? h : "🎉 لا دعوات";
+    }
+    
+    function aInv(i) {
+        var v = cI[i]; v.status = "موافق عليه"; msg("⏳...", 0);
+        api("/invite_requests/" + v._k, "PUT", v, function() {
+            api("/users", null, null, function(u) {
+                if (u) {
+                    for (var k in u) {
+                        var e = String(u[k].email || "").toLowerCase();
+                        var inviterE = String(v.inviterEmail || "").toLowerCase();
+                        var invitedE = String(v.invitedEmail || "").toLowerCase();
+                        if (e === inviterE || e === invitedE) {
+                            u[k].balance = (Number(u[k].balance) || 0) + 1;
+                            api("/users/" + k, "PUT", u[k], function() {});
+                        }
+                    }
+                }
+                msg("✅ تمت مكافأتهم!", 0); lInv();
+            });
+        });
+    }
+    
+    function xInv(i) { cI[i].status = "مرفوض"; msg("⏳...", 0); api("/invite_requests/" + cI[i]._k, "PUT", cI[i], function() { msg("❌", 0); lInv(); }); }
+    </script>
+</body>
+</html>

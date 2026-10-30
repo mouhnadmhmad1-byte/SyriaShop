@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الطلبات - Syria Shop</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #080d1a; color: #f8fafc; padding-bottom: 85px; margin: 0; }
+
+        .balance-top-header {
+            background: linear-gradient(180deg, #1e3a8a 0%, #0f172a 100%);
+            padding: 14px 16px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .balance-text { font-size: 18px; font-weight: bold; color: #ffffff; direction: ltr; }
+        .back-btn {
+            background: rgba(255, 255, 255, 0.12); border: 1px solid #334155; color: #cbd5e1;
+            padding: 6px 14px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: bold;
+        }
+
+        .container { padding: 15px; }
+
+        .orders-hero-header {
+            background: linear-gradient(135deg, #1e3a8a, #172554); border: 1px solid #2563eb;
+            border-radius: 14px; padding: 12px; text-align: center; color: white;
+            font-size: 15px; font-weight: bold; margin-bottom: 12px;
+        }
+        .orders-table-container {
+            background-color: #111827; border: 1px solid #1f2937; border-radius: 14px; overflow: hidden;
+        }
+        .orders-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 11px; }
+        .orders-table th { background-color: #1e3a8a; color: white; padding: 9px 4px; font-weight: bold; border-bottom: 1px solid #334155; }
+        .orders-table td { padding: 9px 4px; border-bottom: 1px solid #1f2937; color: #cbd5e1; word-break: break-word; }
+        
+        .badge-completed { border: 1px solid #059669; color: #34d399; background: rgba(5, 150, 105, 0.15); padding: 3px 6px; border-radius: 8px; font-weight: bold; font-size: 10px; }
+        .badge-rejected { border: 1px solid #dc2626; color: #f87171; background: rgba(220, 38, 38, 0.15); padding: 3px 6px; border-radius: 8px; font-weight: bold; font-size: 10px; }
+        .badge-pending { border: 1px solid #d97706; color: #fbbf24; background: rgba(217, 119, 6, 0.15); padding: 3px 6px; border-radius: 8px; font-weight: bold; font-size: 10px; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 62px;
+            background: #070d1e; border-top: 1.5px solid #1e293b;
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 900; box-shadow: 0 -4px 15px rgba(0,0,0,0.6);
+        }
+        .nav-link-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 2px; color: #64748b; font-size: 11px; font-weight: bold; cursor: pointer; flex: 1; height: 100%;
+            text-decoration: none;
+        }
+        .nav-link-item.active { color: #38bdf8; }
+        .nav-link-item .nav-icon { font-size: 20px; }
+    </style>
+</head>
+<body>
+
+    <header class="balance-top-header">
+        <a href="index.html" class="back-btn">⬅ الرئيسية</a>
+        <div class="balance-text" id="topWalletBalance">الرصيد: 0.00 ل.س</div>
+    </header>
+
+    <div class="container">
+        <div class="orders-hero-header">سجل الطلبات</div>
+        <div class="orders-table-container">
+            <table class="orders-table">
+                <thead>
+                    <tr><th>الحالة</th><th>معرف اللاعب</th><th>السبب / الملاحظات</th><th>اللعبة</th></tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <tr><td colspan="4" style="color:#64748b; padding:20px;">جارٍ تحميل سجل الطلبات...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="bottom-nav">
+        <a href="index.html" class="nav-link-item">
+            <div class="nav-icon">🏠</div><div>الرئيسية</div>
+        </a>
+        <a href="wallet.html" class="nav-link-item">
+            <div class="nav-icon">👛</div><div>المحفظة</div>
+        </a>
+        <a href="orders.html" class="nav-link-item active">
+            <div class="nav-icon">📋</div><div>الطلبات</div>
+        </a>
+        <a href="events.html" class="nav-link-item">
+            <div class="nav-icon">🎁</div><div>الفعاليات</div>
+        </a>
+    </footer>
+
+    <script>
+        var FIREBASE_URL = "https://syria-shop-01-default-rtdb.firebaseio.com";
+        var ADMIN_EMAIL = "mouhnad mhmad@gmail.comm";
+        var currentUser = "";
+
+        try { currentUser = localStorage.getItem('syriaShopCurrentUser') || ""; } catch(e){}
+
+        function toSafeKey(email) {
+            return String(email || "guest").toLowerCase().replace(/[^a-z0-9]/g, '_');
+        }
+
+        function formatBalance(amount) {
+            var num = parseFloat(amount) || 0;
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function loadOrders() {
+            var tbody = document.getElementById('ordersTableBody');
+            if (!currentUser) {
+                tbody.innerHTML = '<tr><td colspan="4" style="color:#64748b; padding:20px;">سجل دخولك لرؤية طلباتك</td></tr>';
+                return;
+            }
+
+            fetch(FIREBASE_URL + "/orders.json")
+                .then(function(r){ return r.json(); })
+                .then(function(data){
+                    if (!data) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="color:#64748b; padding:20px;">لا توجد طلبات سابقة</td></tr>';
+                        return;
+                    }
+                    var list = [];
+                    Object.keys(data).forEach(function(k){
+                        if (data[k] && data[k].userEmail === currentUser) list.push(data[k]);
+                    });
+                    if (list.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="color:#64748b; padding:20px;">لا توجد طلبات سابقة</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = '';
+                    list.reverse().forEach(function(o){
+                        var status = o.status || 'قيد الانتظار';
+                        var badgeClass = (status === 'مكتمل') ? 'badge-completed' : (status === 'مرفوض' ? 'badge-rejected' : 'badge-pending');
+                        var tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><span class="${badgeClass}">${status}</span></td>
+                            <td style="font-weight:bold; color:white;">${o.playerId || '---'}</td>
+                            <td style="color:${status === 'مرفوض' ? '#f87171' : '#cbd5e1'}; font-size:10px;">
+                                ${o.reason || o.package || '---'}
+                            </td>
+                            <td style="font-weight:bold; color:#38bdf8;">${o.game || '---'}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }).catch(function(){
+                    tbody.innerHTML = '<tr><td colspan="4" style="color:#ef4444; padding:20px;">تعذر تحميل الطلبات</td></tr>';
+                });
+        }
+
+        (function(){
+            if (!currentUser) return;
+            if (currentUser === ADMIN_EMAIL) {
+                document.getElementById('topWalletBalance').innerText = 'الرصيد: ∞';
+                loadOrders();
+                return;
+            }
+            fetch(FIREBASE_URL + "/users/" + toSafeKey(currentUser) + ".json")
+                .then(function(r){ return r.json(); })
+                .then(function(u){
+                    if (u && u.balance !== undefined) {
+                        document.getElementById('topWalletBalance').innerText = "الرصيد: " + formatBalance(u.balance) + " ل.س";
+                    }
+                }).catch(function(){});
+            loadOrders();
+        })();
+    </script>
+</body>
+</html>
